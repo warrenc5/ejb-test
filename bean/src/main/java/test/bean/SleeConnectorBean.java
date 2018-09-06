@@ -2,6 +2,7 @@ package test.bean;
 
 import java.io.*;
 import java.rmi.RemoteException;
+import java.util.Base64;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
 
@@ -21,7 +22,6 @@ import javax.slee.UnrecognizedEventException;
 import javax.slee.connection.ExternalActivityHandle;
 import javax.slee.connection.SleeConnection;
 import javax.slee.connection.SleeConnectionFactory;
-import sun.misc.BASE64Encoder;
 
 @Stateless
 @TransactionManagement(TransactionManagementType.BEAN)
@@ -212,16 +212,10 @@ public class SleeConnectorBean implements SleeConnectorBeanLocal {
 
     public static String serializeHandle(Handle handle) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PipedOutputStream pos = new PipedOutputStream();
-        PipedInputStream pis = new PipedInputStream(pos);
-
-        ObjectOutputStream out = new ObjectOutputStream(pos);
+        ObjectOutputStream out = new ObjectOutputStream(baos);
         out.writeObject(handle);
         out.flush();
-
-        BASE64Encoder b64 = new BASE64Encoder();
-        b64.encode(pis, baos);
-
-        return baos.toString();
+        byte[] encode = Base64.getEncoder().encode(baos.toByteArray());
+        return new String(encode);
     }
 }
