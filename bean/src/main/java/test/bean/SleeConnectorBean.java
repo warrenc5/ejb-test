@@ -23,21 +23,19 @@ import javax.slee.connection.SleeConnection;
 import javax.slee.connection.SleeConnectionFactory;
 import sun.misc.BASE64Encoder;
 
-@Stateless//(name = SleeConnectorBeanLocal.NAME)
+@Stateless
 @TransactionManagement(TransactionManagementType.BEAN)
 @Local(value = {SleeConnectorBeanLocal.class})
 @Remote(value = {SleeConnectorBeanRemote.class})
-//@Clustered
 public class SleeConnectorBean implements SleeConnectorBeanLocal {
-//http://www.mastertheboss.com/jboss-frameworks/ironjacamar/create-your-first-jca-connector-tutorial?showall=&start=1
 
     private transient SleeConnection connection = null;
     private Logger logger = Logger.getLogger(SleeConnectorBean.class.getSimpleName());
     private EventTypeID messageEventType;
     private static final String remoteMobicentsConnectionFactory = "java:/eis/SleeConnectionFactory";
 
-    @Resource(name = remoteMobicentsConnectionFactory)
-    private static transient SleeConnectionFactory factory;
+    @Resource(mappedName = remoteMobicentsConnectionFactory)
+    private SleeConnectionFactory factory;
 
     @Resource
     private EJBContext context;
@@ -66,8 +64,8 @@ public class SleeConnectorBean implements SleeConnectorBeanLocal {
     @PostActivate
     @PostConstruct
     private void initializeSleeConnectionFactory() {
-        logger.info("initializing");
         if (factory == null) {
+            logger.info("initializing");
             try {
 
                 InitialContext ictx = new InitialContext();
@@ -142,9 +140,7 @@ public class SleeConnectorBean implements SleeConnectorBeanLocal {
             connection.fireEvent(eventObject, eventTypeID, handle, address);
 
             if (logger.isEnabledFor(Level.INFO)) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("event fired " + handle.toString() + " " + eventObject.getClass().getName());
-                }
+                logger.info("event fired " + handle.toString() + " " + eventObject.getClass().getName());
             }
         } catch (Throwable x) {
             if (logger.isEnabledFor(Level.WARN)) {
